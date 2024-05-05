@@ -39,7 +39,7 @@ void game(int target, int limit, bool print_hint){
                         printf("Too high.\n");
                     }
                     else{
-                        printf("Too low");
+                        printf("Too low\n");
                     }
                 }
             }
@@ -95,60 +95,73 @@ int main(){
     // game intro and takes input
     printf("Hello, welcome to the guessing game. A random number will be chosen and you have to guess it.\n");
 
-    printf("What difficulty? Easy, Medium, or Hard\n");
-    scanf("%s", difficulty);
-    str_lwr(difficulty);
-    if(strcmp(difficulty, "easy") == 0){
+    do{
+      printf("What difficulty? Easy, Medium, Hard, or Quit\n");
+      scanf("%s", difficulty);
+      str_lwr(difficulty);
+      if(strcmp(difficulty, "easy") == 0){
         max = 10;
-    }
-    else if(strcmp(difficulty, "medium") == 0){
+        break;
+      }
+      else if(strcmp(difficulty, "medium") == 0){
         max = 50;
-    }
-    else if(strcmp(difficulty, "hard") == 0){
+        break;
+      }
+      else if(strcmp(difficulty, "hard") == 0){
         max = 100;
-    }
-    else{
-        printf("invalid answer.\n");
+        break;
+      }
+      else if(strcmp(difficulty, "quit") == 0){
         return 0;
-    }
+      } 
+      else{
+        printf("invalid answer.\n");
+      }
+    }while(1);
 
     // number to be guessed
     int target = (rand() % max) + 1;
 
-    printf("Would you like hints on? Yes or No\n");
-    scanf("%s", hint);
-    str_lwr(hint);
-    if(strcmp(hint, "yes") == 0){
+    do{
+      printf("Would you like hints on? Yes, No, or Quit\n");
+      scanf("%s", hint);
+      str_lwr(hint);
+      if(strcmp(hint, "yes") == 0){
         print_hint = true;
-    }
-    else if(strcmp(hint, "no") == 0){
+        break;
+      }
+      else if(strcmp(hint, "no") == 0){
         print_hint = false;
-    }
-    else{
-        printf("invalid answer.\n");
+        break;
+      }
+      else if(strcmp(difficulty, "quit") == 0){
         return 0;
-    }
+      }
+      else{
+        printf("invalid answer.\n");
+      }
+    }while(1);
 
     printf("Unlimited guesses or preset amount? Unlimited or preset\n");
     scanf("%s", type);
     str_lwr(type);
     if(strcmp(type, "unlimited") == 0){
-        game(target, -1, print_hint);
+      game(target, -1, print_hint);
     }
     else if(strcmp(type, "preset") == 0){
-        if(max == 10){
-            game(target, 3, print_hint);
-        }
-        else if(max == 50){
-            game(target, 7, print_hint);
-        }
-        else{
-            game(target, 10, print_hint);
-        }
+      if(max == 10){
+        game(target, 3, print_hint);
+      }
+      else if(max == 50){
+        game(target, 7, print_hint);
+      }
+      else{
+        game(target, 10, print_hint);
+      }
     }
     else{
-        printf("invalid answer.\n");
-        return 0;
+      printf("invalid answer.\n");
+      return 0;
     }
 
     free(difficulty);
