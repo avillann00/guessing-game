@@ -3,6 +3,8 @@
 // header files
 #include <limits.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 // gui library
 #include <raylib.h>
 
@@ -49,22 +51,11 @@ int main(){
   InitWindow(screen_width, screen_height, "basic window");
   
   // rectangle structs for all the buttons
-  default:
-  Rectangle easy = {
-    screenWidth / 2 - 100, screenHeight / 2 - 150, 200, 100);
-  };
-  Rectangle medium = {
-    screenWidth / 2 - 100, screenHeight / 2 - 50, 200, 100);
-  };
-  Rectangle hard = {
-    screenWidth / 2 - 100, screenHeight / 2 + 50, 200, 100);
-  };
-  Rectangle hint = {
-    screenWidth / 2 - 100, screenHeight / 2 + 150, 200, 100);
-  };
-  Rectangle type = {
-    screenWidth / 2 - 100, screenHeight / 2 + 250, 200, 100);
-  };
+  Rectangle easy = { screen_width / 2 - 100, screen_height / 2 - 150, 200, 100 };
+  Rectangle medium = { screen_width / 2 - 100, screen_height / 2 - 50, 200, 100 };
+  Rectangle hard = { screen_width / 2 - 100, screen_height / 2 + 50, 200, 100 };
+  Rectangle hint = { screen_width / 2 - 100, screen_height / 2 + 150, 200, 100 };
+  Rectangle type = { screen_width / 2 - 100, screen_height / 2 + 250, 200, 100 };
   
   // bools to check if a button is pressed
   bool easy_pressed = false;
@@ -130,7 +121,7 @@ int main(){
         }
         
         // make the number to be guessed based on the settings above
-        if(IsKeyPressed(KEY_ENTER) && (easy_pressed || medium_pressed || hard_pressed){
+        if(IsKeyPressed(KEY_ENTER) && (easy_pressed || medium_pressed || hard_pressed)){
           answer = GetRandomValue(1, max);
           current = GAME;
         }
@@ -140,11 +131,11 @@ int main(){
           current = END;
         }
         // if the user enters a number put it in input
-        if(inputLength < MAX_INPUT_CHARS){
+        if(strlen(input) < INPUT_SIZE - 1){
             key = GetKeyPressed();
             if(key == KEY_ENTER){
               if(answer == atoi(input)){
-                won == true;
+                won = true;
               }
               else{
                 num_guesses--;
@@ -169,7 +160,7 @@ int main(){
           current = START;
           reset(input);
           won = false;
-            easy_presset = false;
+            easy_pressed = false;
             medium_pressed = false;
             hard_pressed = false;
             type_pressed = false;
@@ -214,7 +205,7 @@ int main(){
         DrawText("Unlimited Guesses?", type.x + type.width / 2 - MeasureText("Unlimited Guesses?", 20) / 2, type.y + type.height / 2 - 10, 20, BLACK);
         break;
       case GAME: // where the game is actuall played
-        DrawText("Type a guess, then press enter" 120, 220, 20, GRAY);
+        DrawText("Type a guess, then press enter", 120, 220, 20, GRAY);
         DrawRectangleLines(120, 320, 200, 40, GRAY);
         DrawText(input, 120, 330, 20, BLACK);
 
