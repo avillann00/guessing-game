@@ -51,19 +51,19 @@ int main(){
   // rectangle structs for all the buttons
   default:
   Rectangle easy = {
-    screenWidth / 2 - 100, screenHeight / 2 - 50, 200, 100);
+    screenWidth / 2 - 100, screenHeight / 2 - 150, 200, 100);
   };
   Rectangle medium = {
     screenWidth / 2 - 100, screenHeight / 2 - 50, 200, 100);
   };
   Rectangle hard = {
-    screenWidth / 2 - 100, screenHeight / 2 - 50, 200, 100);
+    screenWidth / 2 - 100, screenHeight / 2 + 50, 200, 100);
   };
   Rectangle hint = {
-    screenWidth / 2 - 100, screenHeight / 2 - 150, 200, 100);
+    screenWidth / 2 - 100, screenHeight / 2 + 150, 200, 100);
   };
   Rectangle type = {
-    screenWidth / 2 - 100, screenHeight / 2 - 250, 200, 100);
+    screenWidth / 2 - 100, screenHeight / 2 + 250, 200, 100);
   };
   
   // bools to check if a button is pressed
@@ -73,15 +73,19 @@ int main(){
   bool type_pressed = false;
   bool hint_pressed = false;
 
+  // variable for the correct anser
+  int answer;
+
   // while loop to keep the window open until closed by user
-  while(WindowShouldClose()){
+  while(!WindowShouldClose()){
     // handles updating the pages (buttons)
     switch(current){
-      case LOGO:
+      case LOGO: // logo functionality
         if(IsKeyPressed(KEY_ENTER)){
           current = START;
         }
-      case START: 
+        break;
+      case START: // start functionality
           // all of the settings for the game
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
           Vector2 mousePoint = GetMousePosition();
@@ -94,12 +98,7 @@ int main(){
             max = 10;
             num_guesses = g_num;
           }
-          else{
-            hard_pressed = false;
-            easy_pressed = false;
-            medium_pressed = false;
-          }
-          if(CheckCollisionPointRec(mousePoint, medium)){
+          else if(CheckCollisionPointRec(mousePoint, medium)){
             g_num = 5;
             medium_pressed = true;
             easy_pressed = false;
@@ -107,12 +106,7 @@ int main(){
             max = 50;
             num_guesses = g_num;
           }
-          else{
-            hard_pressed = false;
-            easy_pressed = false;
-            medium_pressed = false;
-          }
-          if(CheckCollisionPointRec(mousePoint, hard)){
+          else if(CheckCollisionPointRec(mousePoint, hard)){
             g_num = 10;
             hard_pressed = true;
             easy_pressed = false;
@@ -120,46 +114,29 @@ int main(){
             max = 100;
             num_guesses = g_num;
           }
-          else{
-            hard_pressed = false;
-            easy_pressed = false;
-            medium_pressed = false;
-          }
           if(CheckCollisionPointRec(mousePoint, hint)){
-            hint_pressed = true;
-          }
-          else{
-            hint_pressed = false;
+            hint_pressed = !hint_pressed;
           }
           if(CheckCollisionPointRec(mousePoint, type)){
-            type_pressed = true;
+            type_pressed = !type_pressed;
             num_guesses = INT_MAX;
-          }
-          else{
-            type_pressed = false;
-            num_guesses = g_num;
+            if(type_pressed){
+              num_guesses = INT_MAX;
+            }
+            else{
+              num_guesses = g_num;
+            }
           }
         }
         
         // make the number to be guessed based on the settings above
         if(IsKeyPressed(KEY_ENTER) && (easy_pressed || medium_pressed || hard_pressed){
-          int answer;
-          switch(max){
-            case 10:
-              answer = GetRandomValue(1, 10);
-              break;
-            case 50:
-              answer = GetRandomValue(1, 50);
-              break;
-            case 100:
-              answer = GetRandomValue(1, 100);
-              break;
-          }
+          answer = GetRandomValue(1, max);
           current = GAME;
         }
         break;
-      case GAME:
-        if(num_guesses == 0 || won == true){
+      case GAME: // game functionality
+        if(num_guesses == 0 || won){
           current = END;
         }
         // if the user enters a number put it in input
@@ -168,27 +145,37 @@ int main(){
             if(key == KEY_ENTER){
               if(answer == atoi(input)){
                 won == true;
-                reset(input);
               }
               else{
                 num_guesses--;
-                reset(input);
               }
+              reset(input);
             }
-            if(key == KEY_BACKSPACE && key_size < INPUT_SIZE){
+            // user presses backspace
+            else if(key == KEY_BACKSPACE && key_size < INPUT_SIZE){
               key_size++;
               input[key_size] = '0';
             }
-            if((key >= KEY_ZERO) && (key <= KEY_NINE)){
+            // user inputs a number
+            else if((key >= KEY_ZERO) && (key <= KEY_NINE)){
                 input[key_size] = (char)(key);
                 key_size--;
             }
         }
         break;
-      case END:
+      case END: // end functionality
+        // if enter is pressed, restart game
         if(IsKeyPressed(KEY_ENTER)){
           current = START;
+          reset(input);
+          won = false;
+            easy_presset = false;
+            medium_pressed = false;
+            hard_pressed = false;
+            type_pressed = false;
+            hint_pressed = false;
         }
+        break;
       default:
        break;
     }
@@ -201,8 +188,8 @@ int main(){
     switch(current){
       case LOGO: // the starting screen
         DrawText("Welcome to the guessing game!", 120, 220, 20, GRAY);
-        DrawText("Made by Austin Villanueva, avillann00 on github", 120, 320, 20, GRAY);
-        DrawText("Press enter to continue to game", 120, 320, 20, GRAY);
+        DrawText("Made by Austin Villanueva, avillann00 on github", 120, 260, 20, GRAY);
+        DrawText("Press enter to continue to game", 120, 300, 20, GRAY);
         break;
       case START: // the screen where the difficulty is chosen
         // buttons for each respective button
@@ -228,8 +215,8 @@ int main(){
         break;
       case GAME: // where the game is actuall played
         DrawText("Type a guess, then press enter" 120, 220, 20, GRAY);
-        DrawRectangleLines(120, 320, 20, GRAY);
-        DrawText(input, 120, 320, 20, GRAY);
+        DrawRectangleLines(120, 320, 200, 40, GRAY);
+        DrawText(input, 120, 330, 20, BLACK);
 
       case END: // the ending screen
         DrawText("THE END!", 120, 220, 20, GRAY);
@@ -237,15 +224,15 @@ int main(){
           DrawText("YOU WON", 120, 320, 20, GRAY);
         }
         else{
-          DrawText("NICE TRY", 120, 420, 20, GRAY);
+          DrawText("NICE TRY", 120, 320, 20, GRAY);
         }
-        DrawText("PLAY AGAIN?", 120, 450, 20, GRAY);
+        DrawText("PLAY AGAIN?", 120, 420, 20, GRAY);
       default:
         break;
     }
 
     // end the drawing
-    EndDrawing;
+    EndDrawing();
   }
 
   // closes the window
