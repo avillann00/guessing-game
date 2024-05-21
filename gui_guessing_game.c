@@ -1,6 +1,8 @@
 // TODO: ADD MUSIC? ADD PICTURES?
 
 // header files
+#include <stdio.h>
+#include <time.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -15,31 +17,65 @@
 typedef enum screens{LOGO = 0, START = 1, GAME = 2, END = 3} screens;
 
 // function that resets the users input
-void reset(char * word){
-  for(int i = 0; i < INPUT_SIZE; i++){
-    word[i] = '0';
-  }
-
+void reset(char * word, int * letter_count){
+  word[0] = '\0';  
+  *letter_count = 0;
   return;
+}
+
+int to_int(char key){
+  switch(key){
+    case KEY_ZERO:
+      return 0;
+    case KEY_ONE:
+      return 1;
+    case KEY_TWO:
+      return 2;
+    case KEY_THREE:
+      return 3;
+    case KEY_FOUR:
+      return 4;
+    case KEY_FIVE:
+      return 5;
+    case KEY_SIX:
+      return 6;
+    case KEY_SEVEN:
+      return 7;
+    case KEY_EIGHT:
+      return 8;
+    case KEY_NINE:
+      return 9;
+  };
+  return 0;
 }
 
 // main function
 int main(){
+  // random function
+  srand(time(NULL));
+
+  // setting the fps 
+  SetTargetFPS(100);
+
   // window height and width
   const int screen_width = 800;
-  const int screen_height = 450;
+  const int screen_height = 800;
 
   // the max that the random number can be
   int max;
   // the number of guesses the user gets if not unlimited
   int num_guesses;
-  // the key taken #include 
+  // the key taken from the user 
   int key;
-  // the number of digits in key
-  int key_size = INPUT_SIZE - 1;
+  // the position of the input
+  int letter_count = 0;
   // the full input of the user guess
   char input[INPUT_SIZE];
-  reset(input);
+  reset(input, &letter_count);
+  // the int version of the user input
+  int i_input = 0;
+  // variable to store the moving text
+  int pos_x = 0;
 
   // set the current screen
   screens current = LOGO;
@@ -63,6 +99,10 @@ int main(){
   bool hard_pressed = false;
   bool type_pressed = false;
   bool hint_pressed = false;
+  
+  // bools to check if too high or too low
+  bool high = false;
+  bool low = false;
 
   // variable for the correct anser
   int answer;
@@ -122,7 +162,8 @@ int main(){
         
         // make the number to be guessed based on the settings above
         if(IsKeyPressed(KEY_ENTER) && (easy_pressed || medium_pressed || hard_pressed)){
-          answer = GetRandomValue(1, max);
+          answer = rand() % max + 1;
+          printf("ANSWER HERE: %d\n", answer);
           current = GAME;
         }
         break;
@@ -130,45 +171,86 @@ int main(){
         if(num_guesses == 0 || won){
           current = END;
         }
-        // if the user enters a number put it in input
-        if(strlen(input) < INPUT_SIZE - 1){
-            key = GetKeyPressed();
-            if(key == KEY_ENTER){
-              if(answer == atoi(input)){
-                won = true;
-              }
-              else{
-                num_guesses--;
-              }
-              reset(input);
+
+        key = GetCharPressed();
+        // user inputs a number
+        while(key > 0){
+            if((key >= 48) && (key <= 57) && (letter_count < INPUT_SIZE - 1)){
+              input[letter_count] = (char)key;
+              input[letter_count + 1] = '\0';
+              letter_count++;
+              
+              i_input = i_input * 10 + to_int(key);
             }
-            // user presses backspace
-            else if(key == KEY_BACKSPACE && key_size < INPUT_SIZE){
-              key_size++;
-              input[key_size] = '0';
+
+            key = GetCharPressed();
+        }
+        // user presses backspace
+        if(IsKeyPressed(KEY_BACKSPACE)){
+            if(letter_count > 0){
+              letter_count--;
+              input[letter_count] = '\0';
+              i_input /= 10;  
             }
-            // user inputs a number
-            else if((key >= KEY_ZERO) && (key <= KEY_NINE)){
-                input[key_size] = (char)(key);
-                key_size--;
+        }
+        // user presses enter
+        if(IsKeyPressed(KEY_ENTER)){
+          if(answer == i_input){
+            won = true;
+          }
+          else{
+            if(i_input < answer){
+              low = true;
+              high = false;
+              pos_x = 0;
             }
+            else{
+              high = true;
+              low = false;
+              pos_x = 0;
+            }
+            num_guesses--;
+          }
+          reset(input, &letter_count);
+          i_input = 0;
+        }
+  
+        // hint functionality
+        if(low && hint_pressed){
+          pos_x++;
+          if(pos_x >= screen_width){
+            pos_x = 0;
+            low = false;
+          }
+        }
+        if(high && hint_pressed){
+          pos_x++;
+          if(pos_x >= screen_width){
+            pos_x = 0;
+            high = false;
+          }
         }
         break;
       case END: // end functionality
         // if enter is pressed, restart game
         if(IsKeyPressed(KEY_ENTER)){
           current = START;
-          reset(input);
+          reset(input, &letter_count);
           won = false;
-            easy_pressed = false;
-            medium_pressed = false;
-            hard_pressed = false;
-            type_pressed = false;
-            hint_pressed = false;
+          easy_pressed = false;
+          medium_pressed = false;
+          hard_pressed = false;
+          type_pressed = false;
+          hint_pressed = false;
+          low = false;
+          high = false;
+          max = 0;
+          num_guesses = 0;
+          i_input = 0;
         }
         break;
       default:
-       break;
+        break;
     }
 
     // start putting out image
@@ -205,9 +287,16 @@ int main(){
         DrawText("Unlimited Guesses?", type.x + type.width / 2 - MeasureText("Unlimited Guesses?", 20) / 2, type.y + type.height / 2 - 10, 20, BLACK);
         break;
       case GAME: // where the game is actuall played
-        DrawText("Type a guess, then press enter", 120, 220, 20, GRAY);
+        DrawText("Guess a number then press enter", 120, 220, 20, GRAY);
         DrawRectangleLines(120, 320, 200, 40, GRAY);
-        DrawText(input, 120, 330, 20, BLACK);
+        DrawText(input, 130, 330, 20, BLACK);
+        if(low && hint_pressed){
+          DrawText("Too low", pos_x, 400, 20, GRAY);
+        }
+        if(high && hint_pressed){
+          DrawText("Too high", pos_x, 400, 20, GRAY);
+        }
+        break;
 
       case END: // the ending screen
         DrawText("THE END!", 120, 220, 20, GRAY);
@@ -217,7 +306,7 @@ int main(){
         else{
           DrawText("NICE TRY", 120, 320, 20, GRAY);
         }
-        DrawText("PLAY AGAIN?", 120, 420, 20, GRAY);
+        DrawText("PLAY AGAIN?(ENTER)", 120, 420, 20, GRAY);
       default:
         break;
     }
