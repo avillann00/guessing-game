@@ -266,6 +266,7 @@ int main(){
         break;
       case START: // the screen where the difficulty is chosen
         // buttons for each respective button
+        DrawText("Put settings, then press enter to start", 120, 220, 20 , GRAY);
         DrawRectangleRec(easy, easy_pressed ? GRAY : LIGHTGRAY);
         DrawRectangleLines(easy.x, easy.y, easy.width, easy.height, BLACK);
         DrawText("Easy", easy.x + easy.width / 2 - MeasureText("Easy", 20) / 2, easy.y + easy.height / 2 - 10, 20, BLACK);
